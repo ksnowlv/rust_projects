@@ -1,5 +1,3 @@
-use std::thread;
-use std::time::Duration;
 use rayon::prelude::*;
 pub fn thread_pool_test() {
 
@@ -10,11 +8,7 @@ pub fn thread_pool_test() {
 		v.push(i);
 	}
 
-	let sum:  u64 = v
-		.into_par_iter()
-		.map(|i| {
-			// Simulate some computation
-			thread::sleep(Duration::from_nanos(1));
+	let sum:  u64 = v.into_par_iter().map(|i| {
 			i
 		})
 		.sum();
