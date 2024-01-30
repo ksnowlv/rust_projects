@@ -11,3 +11,4 @@ mod rust_muti_thread;
 mod rust_atomic_test;
 mod rust_thread_communication;
 mod rust_thread_pool;
+mod rust_file_io;

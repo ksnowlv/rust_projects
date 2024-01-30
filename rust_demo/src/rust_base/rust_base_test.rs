@@ -5,6 +5,7 @@ use crate::rust_base::rust_function::function_test;
 use crate::rust_base::rust_struct::struct_test;
 use std::f64::consts::PI;
 use crate::rust_base::rust_atomic_test::atomic_test;
+use crate::rust_base::rust_file_io::file_io_test;
 use crate::rust_base::rust_genericity::genericity_test;
 use crate::rust_base::rust_muti_thread::muti_thread_test;
 use crate::rust_base::rust_smart_pointer::smart_pointer_test;
@@ -26,4 +27,5 @@ pub fn rust_base_test() {
 	atomic_test();
 	thread_communication_test();
 	thread_pool_test();
+	file_io_test();
 }
