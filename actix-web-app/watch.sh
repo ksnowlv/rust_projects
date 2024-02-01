@@ -1,2 +1,2 @@
 #!/bin/bash
-cargo watch -x 'run --bin app'
+cargo watch -x 'run --bin actix-web-app'
