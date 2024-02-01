@@ -1,2 +1,5 @@
 rust_demo/target
 rust_demo/.idea
+actix-web-app/target
+actix-web-app/.idea
+actix_web_app

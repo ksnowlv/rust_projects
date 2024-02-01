@@ -1,26 +1,20 @@
 
-use actix_web::{web, HttpResponse, Responder };
-
-
+use actix_web::{web, HttpResponse, Responder,error };
 use actix_multipart::Multipart;
 use futures::{StreamExt, TryStreamExt};
-use std::io::Write;
-use uuid::Uuid;
 
-async fn upload_file(mut payload: Multipart) -> Result<HttpResponse> {
+
+pub fn file_routes(cfg: &mut web::ServiceConfig) {
+       cfg.service(web::scope("/api/file")
+           .route("/upload_file", web::post().to(upload_file))
+       );
+}
+
+async fn upload_file(mut payload: Multipart) -> Result<HttpResponse, actix_web::Error> {
        while let Ok(Some(mut field)) = payload.try_next().await {
-              let content_type = field.content_disposition().unwrap();
-              let filename = Uuid::new_v4().to_string();
-              let filepath = format!("/path/to/save/{}", filename);
-
-              let mut f = web::block(|| std::fs::File::create(filepath))
-                  .await
-                  .unwrap();
-
-              while let Some(chunk) = field.next().await {
-                     let data = chunk.unwrap();
-                     f = web::block(move || f.write_all(&data).map(|_| f)).await?;
-              }
+              // 获取上传文件的文件名
+              let content_type = field.content_disposition();
+              let filename = content_type.get_filename().ok_or_else(|| error::ErrorBadRequest("missing file"))?;
        }
 
        Ok(HttpResponse::Ok().body("File uploaded"))
