@@ -3,3 +3,6 @@ rust_demo/.idea
 actix-web-app/target
 actix-web-app/.idea
 actix_web_app
+swagger_test/target
+swagger_ui_test/target
+Cargo.lock

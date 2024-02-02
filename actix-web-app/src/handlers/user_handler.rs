@@ -1,5 +1,6 @@
 use actix_web::{web, HttpResponse, Responder };
 use crate::models::user::User;
+use crate::models::user::UserRegisterInfo;
 
 pub fn user_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(web::scope("/api/user")
@@ -17,7 +18,9 @@ pub  async fn  get_user() -> impl Responder{
     HttpResponse::Ok().json(user)
 }
 
-pub async fn regist() -> impl Responder {
+pub async fn regist(info: web::Json<UserRegisterInfo>) -> impl Responder {
+    println!("UserRegisterInfo:{:?}", info);
+
     HttpResponse::Ok().body("regist successfully")
 }
 
