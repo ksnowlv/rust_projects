@@ -7,10 +7,7 @@ use futures_util::future::LocalBoxFuture;
 use futures_util::{FutureExt, StreamExt};
 use log::{info, warn, debug};
 
-// There are two steps in middleware processing.
-// 1. Middleware initialization, middleware factory gets called with
-//    next service in chain as parameter.
-// 2. Middleware's call method gets called with normal request.
+
 pub struct Logging;
 
 // Middleware factory is `Transform` trait
@@ -53,7 +50,6 @@ impl<S, B> Service<ServiceRequest> for LoggingMiddleware<S>
 		let path = req.path().to_string();
 		let headers = req.headers().to_owned();
 		let query_params = req.query_string().to_string();
-
 		debug!("request path: {}, \nheader:{:?}, \nquery_params:{} ",
 			path, headers, query_params);
 
@@ -65,9 +61,6 @@ impl<S, B> Service<ServiceRequest> for LoggingMiddleware<S>
 
 			let status = res.status();
 			let headers = res.headers().clone();
-			//let bodys = res.body();
-			let res_data = res.response().body().clone();
-
 			debug!("Status Code: {}", status);
 			debug!("Headers: {:?}", headers);
 			Ok(res)

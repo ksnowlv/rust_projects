@@ -6,7 +6,7 @@ pub fn user_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(web::scope("/api/user")
             .route("/get_user", web::get().to(get_user))
             .route("/login", web::get().to(login))
-            .route("/regist", web::get().to(regist))
+            .route("/regist", web::post().to(regist))
             .route("/get_sms_code", web::get().to(get_sms_code))
             .route("/update", web::get().to(update))
             .route("/delete", web::get().to(delete))

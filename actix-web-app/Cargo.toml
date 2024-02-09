@@ -6,7 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = "4.4.1"
+actix-web = { version = "4", features = ["openssl"] }
+openssl = { version = "0.10", features = ["v110"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0.196"
 cargo-watch = "8.5.2"
@@ -21,8 +22,12 @@ chrono = "0.4.19"
 tower = "0.4"
 futures-util = "0.3.30"
 
-
-[dev-dependencies]
+#[dev-dependencies]
 actix-http = "3.5.0"
+async-trait = "0.1.77"
+serde_json = "1.0.113"
+hyper = "1.1"
+bytes = "1.5.0"
+derive_more = "0.99.17"
 
 
