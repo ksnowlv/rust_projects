@@ -1,10 +1,13 @@
+use actix_http::error::PayloadError;
 use actix_http::KeepAlive;
 use actix_web::{web, App, HttpServer, Responder, HttpResponse, middleware};
 use actix_web::cookie::time::format_description::FormatItem::Component;
+use actix_web::dev::ServiceRequest;
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use crate::handlers::user_handler::user_routes;
 use actix_web::middleware::Compress;
 use actix_web::web::{ scope};
+
 mod handlers;
 mod models;
 mod db;
@@ -13,15 +16,12 @@ mod config;
 mod middlewares;
 mod actix_swagger;
 
-
 use swagger_ui;
 use actix_swagger::lib::swagger;
 use crate::middlewares::{logger::init_logger, logging_middleware, auth_middleware, heartbeat_middleware };
 
-
-
-use env_logger::Env;
 use serde::Serialize;
+use crate::db::db::{initialize_pool, get_pool };
 
 #[derive(Serialize)]
 struct MyData {
@@ -36,10 +36,29 @@ async fn index(path: web::Path<(i32,)>) -> impl Responder {
     HttpResponse::Ok().json(response_data)
 }
 
+// 自定义错误处理程序函数
+async fn handle_json_payload_error(err: PayloadError, _req: &ServiceRequest) -> actix_web::error::Error {
+    // 检查 JSON 负载错误类型并返回自定义响应
+    match err {
+        PayloadError::Overflow => {
+            HttpResponse::PayloadTooLarge()
+                .body("JSON payload is too large!!! more than 2M")
+                .into()
+        },
+        _ => {
+            HttpResponse::BadRequest()
+                .body("Bad request")
+                .into()
+        }
+    }
+}
+
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     init_logger();
+    initialize_pool().await;
 
     let http_server = HttpServer::new(|| {
         let spec = swagger_ui::swagger_spec_file!("actix_swagger/openapi.json");
@@ -52,6 +71,9 @@ async fn main() -> std::io::Result<()> {
             .wrap(logging_middleware::Logging)
            // .wrap(heartbeat_middleware::Heartbeat)
             .wrap(Compress::default())
+            .app_data(web::Data::new(get_pool()))
+            //全局JSON负载的最大大小为2MB,并配置自定义错误处理函数
+            .app_data(web::JsonConfig::default().limit(1024 * 1024 * 2).error_handler(handle_json_payload_error))
             .configure(user_routes).route("/{value}", web::get().to(index))
     });
 

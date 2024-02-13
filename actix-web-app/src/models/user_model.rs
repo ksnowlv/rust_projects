@@ -1,14 +1,15 @@
 use serde::{Serialize, Deserialize};
+use sqlx::{Row, FromRow};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, FromRow,Serialize, Deserialize)]
 pub struct User {
-    pub id: u32,
-    pub user_id: String,
+    pub id: u64,
+    pub userid: String,
     pub phone: String,
-    pub age: u32,
+    pub age: i32,
     pub name: String,
     pub token: String,
-    pub sms_code: String,
+    pub verification_code: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -17,6 +18,11 @@ pub struct UserRegisterInfo {
     pub age: i32,
     pub phone: String,
     pub verification_code: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TokenQuery {
+    pub token: String,
 }
 
 
