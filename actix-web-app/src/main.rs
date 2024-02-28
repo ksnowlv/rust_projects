@@ -15,6 +15,7 @@ use serde_derive::Deserialize;
 use crate::db::db::{initialize_pool, get_pool };
 use crate::handlers::file_handler::file_routes;
 use crate::handlers::user_handler::user_routes;
+use mongodb::{Client};
 
 mod handlers;
 mod models;
@@ -23,6 +24,8 @@ mod cache;
 mod config;
 mod middlewares;
 mod actix_swagger;
+mod xgridfs;
+mod md5_hash;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct MyData {
@@ -44,8 +47,7 @@ async fn to_json() -> impl Responder {
 }
 
 async fn index(path: web::Path<(i32,)>) -> impl Responder {
-    let value = path.0;
-
+    let _value = path.0;
     let response_data = MyData { code:200, message: "Hello, world!".to_string() };
     HttpResponse::Ok().json(response_data)
 }
@@ -63,7 +65,9 @@ async fn main() -> std::io::Result<()> {
     init_logger();
     initialize_pool().await;
 
-    let http_server = HttpServer::new(|| {
+    let client = Client::with_uri_str("mongodb://localhost:27017").await.expect("Failed to initialize MongoDB client");
+
+    let http_server = HttpServer::new(move || {
         let spec = swagger_ui::swagger_spec_file!("actix_swagger/openapi.json");
         let config = swagger_ui::Config::default();
 
@@ -77,7 +81,11 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(get_pool()))
             //全局JSON负载的最大大小为2MB,并配置自定义错误处理函数
             .app_data(web::JsonConfig::default().limit(1024 * 1024 * 2).error_handler(handle_json_payload_error))
-            .configure(user_routes).configure(file_routes).service(to_json).service(from_json)
+            .app_data(web::Data::new(client.clone())) // 将MongoDB客户端绑定到应用状态中
+            .configure(user_routes)
+            .configure(file_routes)
+            .service(to_json)
+            .service(from_json)
     });
 
     // 创建 SSL 加密器

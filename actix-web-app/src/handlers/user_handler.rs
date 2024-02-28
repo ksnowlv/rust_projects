@@ -1,9 +1,6 @@
-use serde::Deserialize;
-use std::collections::HashMap;
 use chrono::{Duration, Utc};
 use actix_web::{web, HttpResponse, Responder, post};
 use actix_web::web::Query;
-use actix_web::web::to;
 use crate::db::{user_db::*, db::get_pool};
 use crate::models::user_model::{User, UserRegisterInfo, TokenQuery};
 use crate::models::{api_response, userid_generator, token_generator};
@@ -70,7 +67,7 @@ pub async fn get_sms_code() -> impl Responder {
 
 pub async fn update(query: Query<TokenQuery>, info: web::Json<UserRegisterInfo>) -> impl Responder {
 	match get_user_by_token(&get_pool(), &query.token).await {
-		Ok(Some(mut user)) => {
+		Ok(Some(user)) => {
 			match update_user(&get_pool(), &info, &user.userid).await {
 				Ok(()) => api_response::ok_handler(Some(user), Some("更新成功".to_string())).await,
 				Err(sqlx::Error::RowNotFound) => api_response::notfound_handler::<String>("未找到该用户，请检查更新的账号是否正确？").await,
@@ -84,7 +81,7 @@ pub async fn update(query: Query<TokenQuery>, info: web::Json<UserRegisterInfo>)
 
 pub async fn delete(query: Query<TokenQuery>) -> impl Responder {
 	match get_user_by_token(&get_pool(), &query.token).await {
-		Ok(Some(mut user)) => {
+		Ok(Some(user)) => {
 			match delete_user(&get_pool(), &user.userid).await {
 				Ok(()) => api_response::ok_handler(Some(user), Some("用户注销成功".to_string())).await,
 				Err(sqlx::Error::RowNotFound) => api_response::notfound_handler::<String>("未找到该用户，注销失败!").await,
